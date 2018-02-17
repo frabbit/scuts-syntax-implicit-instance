@@ -5,8 +5,10 @@ package scuts.syntax.implicitInstance;
 import haxe.macro.Context as C;
 import haxe.macro.Expr;
 import haxe.macro.Type;
-using scuts.macrokit.ArrayApi;
 import haxe.macro.ExprTools as ET;
+
+using scuts.macrokit.ArrayApi;
+
 private typedef Dep = { name : String, ct : ComplexType };
 
 class Impl {
@@ -30,7 +32,6 @@ class Impl {
 
 	static function createConstructor (deps:Array<Dep>):Array<Field> {
 		var assigns:Array<Expr> = [for (d in deps) {
-			// this.name = name
 			var name = d.name;
 			macro this.$name = $i{name};
 		}];
@@ -56,7 +57,6 @@ class Impl {
 
 	static function createInstance (deps:Array<Dep>, cl:ClassType):Array<Field> {
 		var constructorArgs:Array<Expr> = [for (d in deps) {
-			// this.name = name
 			var name = d.name;
 			macro $i{name};
 		}];
@@ -69,7 +69,6 @@ class Impl {
 
 		var expr = macro return new $tp($a{constructorArgs});
 
-		//trace(ET.toString(expr));
 		var args:Array<FunctionArg> = [for (d in deps) {
 			name : d.name,
 			type : d.ct,
@@ -81,8 +80,6 @@ class Impl {
 			expr: expr,
 			params: [for (p in cl.params) { name: p.name}],
 		};
-
-		//trace(ET.toString({ expr: EFunction("instance", f), pos: C.currentPos()}));
 
 		var r:Field = {
 			access: [APublic, AStatic],
@@ -103,18 +100,17 @@ class Impl {
 		var cl = cl.get();
 		var applied = isApplied(cl, BUILD_ID);
 
-		var fields = C.getBuildFields();
+
 		return if (!applied) {
+			var fields = C.getBuildFields();
 			cl.meta.add(BUILD_ID, [], C.currentPos());
 			var res = fields.copy();
 			var deps = getDeps(fields);
-			var typeParams = cl.params;
 			var constructor = createConstructor(deps);
 			var instance = createInstance(deps, cl);
-			//trace(instance);
 			res.concat(instance).concat(constructor);
 		} else {
-			fields;
+			null;
 		}
 	}
 }
