@@ -100,7 +100,6 @@ class Impl {
 		var cl = cl.get();
 		var applied = isApplied(cl, BUILD_ID);
 
-
 		return if (!applied) {
 			var fields = C.getBuildFields();
 			cl.meta.add(BUILD_ID, [], C.currentPos());
