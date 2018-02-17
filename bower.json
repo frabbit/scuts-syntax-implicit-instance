@@ -1,0 +1,21 @@
+{
+	"name": "scuts-syntax-implicit-instance",
+	"homepage": "https://github.com/frabbit/scuts-syntax-implicit-instance",
+	"description": "Scuts Sets",
+	"license": "MIT",
+	"repository": {
+	  "type": "git",
+	  "url": "git@github.com:frabbit/scuts-syntax-implicit-instance.git"
+	},
+	"ignore": [
+	  "**/.*",
+	  "bower_components",
+	  "test",
+	  "bower.json"
+	],
+	"dependencies": {
+		"scuts-prelude": "git@github.com:frabbit/scuts-prelude.git"
+	},
+	"devDependencies": {
+	}
+  }

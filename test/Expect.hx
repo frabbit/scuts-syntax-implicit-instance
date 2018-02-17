@@ -1,0 +1,1 @@
+typedef Expect = scuts.expect.simple.Expect;
