@@ -7,6 +7,7 @@ class Test {
 		prop.Prop.main();
 		multiprops.MultiProps.main();
 		either.EitherTest.main();
+		thisdep.ThisDep.main();
 		Expect.reportAndExit();
 	}
 }
