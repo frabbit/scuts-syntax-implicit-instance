@@ -38,6 +38,32 @@ class Impl {
 		}].flatten();
 	}
 
+	static function hasTypeParam (t:Type, base:ClassType) {
+		var pack = base.pack.join(".");
+		var baseName = base.pack.length > 0 ? pack + "." + base.name : base.name;
+
+		function loop(t) return switch C.follow(t) {
+			case TInst(_.get() => cl, params):
+				switch cl.kind {
+					case KTypeParameter(_):
+						cl.pack.join(".") == baseName;
+					case _:
+						ArrayApi.any(params, loop);
+				}
+			case TEnum(_, params):
+				ArrayApi.any(params, loop);
+			case TType(_, params):
+				ArrayApi.any(params, loop);
+			case TAbstract(_, params):
+				ArrayApi.any(params, loop);
+			case TFun(args, ret):
+				ArrayApi.any(args, a -> loop(a.t)) || loop(ret);
+			case _:
+				false;
+		}
+		return loop(t);
+	}
+
 	static function getInterfaceVars (base:ClassType):Array<Field> {
 
 		function get(cl:Type) {
@@ -47,11 +73,13 @@ class Impl {
 
 					[for (a in allFields) if (a.kind.match(FVar(_))) {
 
-						// trace(a.name, a.isFinal);
-						// trace(a.name);
-						// trace(a.type);
+
 						var t3 = TypeTools.applyTypeParameters(a.type, x.get().params, params1);
+
+						var hasCallSiteTypeParam = hasTypeParam(t3, base);
+
 						var ct = TypeTools.toComplexType(t3);
+						/*
 						function loop(ct) {
 							if (ct == null) return ct;
 							function mapKind(k:FieldType) {
@@ -109,6 +137,7 @@ class Impl {
 							}
 						}
 						var ct2 = loop(ct);
+						*/
 						/*
 						if (base.name == "MonadZeroArray") {
 							trace(haxe.macro.ComplexTypeTools.toString(ct));
@@ -119,11 +148,17 @@ class Impl {
 						//var ct = ct2;
 
 						// trace(ct);
+
 						var name = a.name;
 
-						var c = macro class X{
-							final $name:$ct = _;
-						}
+
+						var c = hasCallSiteTypeParam ?
+							macro class X{
+								final $name:$ct;
+							}
+						: 	macro class X {
+								final $name:$ct = _;
+							}
 						c.fields[0];
 					}];
 				case _: [];
@@ -352,7 +387,7 @@ class Impl {
 		return [for (f in fields) {
 			switch f.kind {
 				case FieldType.FVar(t, e) if (t != null && isUnderscore(e)):
-					var e = macro (scuts.implicit.Implicit.fromExpectedType():$t);
+					var e = macro @:pos(C.currentPos()) (scuts.implicit.Implicit.fromExpectedType():$t);
 
 					var kind = FieldType.FVar(null, e);
 					mkField(f, kind);
